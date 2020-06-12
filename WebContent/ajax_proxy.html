@@ -1,0 +1,61 @@
+<!--step02_ajax_json_jquery.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajax jquery</title>
+    <script type="text/javascript" src="jquery-3.5.1.js">
+
+    </script>
+    <script>
+        $(function() {
+            $('#btn').click(function() {
+                $.ajax({
+                    url : '', 
+                    		
+                    		
+                    type : 'GET',
+                    dataType : 'xml',
+                    error : function(){
+                        alert('error');
+                    },
+                    success : function(obj) {
+                       
+                        $('#sel').append(JSON.stringify(obj));
+                    }
+                });
+                /*
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        console.log(typeof xhr.responseText);
+                        console.log(xhr.responseText);
+
+                        const obj = JSON.parse(xhr.responseText);
+                        const listArray = obj.cafelist;
+
+                        let message = "<ul>";
+
+                        for(let i=0; i<listArray.length; i++){
+                            const listObj = listArray[i];
+                            let name = listObj.name;
+                            let clubid = listObj.clubid
+                            message += "<li>"+name+"("+clubid+")</li>";
+                        }
+                        message += "</ul>";
+                        $('#sel').append(message);
+                    }
+                }
+                */
+                
+            })
+        })
+    </script>
+</head>
+<body>
+    <button id="btn">pull</button>
+    <div id="sel">
+
+    </div>
+</body>
+</html>
