@@ -1,6 +1,33 @@
+<%@page import="kr.or.kpc.dto.NoticeDto"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="kr.or.kpc.dao.NoticeDao"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ include file="../inc/header.jsp"%>
+<%
+	String tempPage = request.getParameter("page");
+int cPage = 0;
+if (tempPage == null || tempPage.length() == 0) {
+	cPage = 1;
+}
+
+try {
+	cPage = Integer.parseInt(tempPage);
+} catch (NumberFormatException e) {
+	cPage = 1;
+}
+/*
+cPage = 1 => 데이터베이스 정렬한걸 1부터 10까지 가져오고 => start값 : 0
+cPage = 2 => 11~20 => start값 : 10
+cPage = 3 => 21~30 => start값 : 20
+
+등차수열
+An = a1 + (n-1)*d
+*/
+NoticeDao dao = NoticeDao.getInstance();
+int start = (cPage - 1) * 10;
+ArrayList<NoticeDto> list = dao.select(start, 10);
+%>
 <nav aria-label="breadcrumb">
 	<ol class="breadcrumb justify-content-end">
 		<li class="breadcrumb-item"><a href="#">홈</a></li>
@@ -28,74 +55,89 @@
 						</tr>
 					</thead>
 					<tbody>
+						<%
+							for (NoticeDto dto : list) {
+						%>
 						<tr>
-							<th scope="row">1</th>
-							<td>성영한</td>
-							<td><a href="view.jsp">타이틀</a></td>
-							<td>@mdo</td>
+							<th scope="row"><%=dto.getNum()%></th>
+							<td><%=dto.getWriter()%></td>
+							<td><a href="view.jsp"><%=dto.getTitle()%></a></td>
+							<td><%=dto.getRegdate()%></td>
 						</tr>
-						<tr>
-							<th scope="row">2</th>
-							<td>Jacob</td>
-							<td>Thornton</td>
-							<td>@fat</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td colspan="2">Larry the Bird</td>
-							<td>@twitter</td>
-						</tr>
+						<%
+							}
+						%>
 					</tbody>
 				</table>
+				<%
+					int totalRows = dao.getRows();
+					int totalPage = 0;
+					int currentBlock = 0;
+					int totalBlock = 0;
+					
+					if(totalRows % 10 ==0){
+						totalPage = totalRows/10;
+					}else{
+						totalPage = totalRows/10 +1;
+					}
+					
+					if(totalPage == 0 ) {
+						totalPage = 1;
+					}
+					
+					if(cPage % 10 == 0) {
+						currentBlock = cPage/10;
+					}else {
+						currentBlock = cPage/10 +1;
+					}
 
+					if(totalPage%10==0) {
+						totalBlock = totalPage/10;	
+					}else { 
+						totalBlock = totalPage/10 +1;
+					}
+					
+					int startPage = 1 +(currentBlock -1)*10;
+					int endPage = 10 + (currentBlock -1)*10;
+					
+					if(currentBlock == totalBlock) {
+						endPage =totalPage;
+					}
+
+				/*
+				totalRow = 128 이면
+				Previous 1 2 3 4 5 6 7 8 9 10 Next => currentBlock : 1block
+				Previous 11 12 13 Next			   => currentBlock : 2block
+
+				totalRow = 65 이면
+				Previous 1 2 3 4 5 6 7 Next
+
+				*/
+				%>
 				<nav aria-label="Page navigation example">
 					<ul class="pagination justify-content-center">
+						<%if(currentBlock==1){ %>
 						<li class="page-item disabled"><a class="page-link" href="#"
 							tabindex="-1" aria-disabled="true">Previous</a></li>
-						<li class="page-item"><a class="page-link" href="#">1</a></li>
-						<li class="page-item"><a class="page-link" href="#">2</a></li>
-						<li class="page-item"><a class="page-link" href="#">3</a></li>
-						<li class="page-item"><a class="page-link" href="#">Next</a>
+						<%}else { %>
+						<li class="page-item "><a class="page-link" href="list.jsp?page=<%=startPage-1 %>"
+							tabindex="-1" aria-disabled="true">Previous</a></li>
+						<%} %>
+						
+						<%for(int i = startPage; i<=endPage; i++) { %>
+						<li class="page-item"><a class="page-link" href="list.jsp?page=<%=i%>"><%=i %></a></li>
+						<%} %>
+						<%if(totalBlock == currentBlock){ %>
+						<li class="page-item disabled"><a class="page-link" href="#">Next</a>
 						</li>
+						<%}else{ %>
+						<li class="page-item "><a class="page-link" href="#">Next</a>
+						</li>
+						<%} %>
 					</ul>
 				</nav>
-				<div class="text-right" style="margin-bottom : 20px;">
-					<a href="write.jsp" class="btn btn-outline-primary" >글쓰기</a>
+				<div class="text-right" style="margin-bottom: 20px;">
+					<a href="write.jsp" class="btn btn-outline-primary">글쓰기</a>
 				</div>
 			</div>
 
